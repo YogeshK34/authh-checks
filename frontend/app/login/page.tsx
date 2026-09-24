@@ -2,24 +2,25 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     useEffect(() => {
-        async function checkLogin() {
-            if (searchParams.get('reason') === 'unauthorized') {
-                return toast.info('Login first to access.')
-            }
-        };
-        checkLogin();
+        if (searchParams.get('reason') === 'unauthorized') {
+            toast.info('Login first to access.');
+        }
     }, []);
 
     async function loginUser() {
@@ -36,7 +37,8 @@ export default function Login() {
             const data = await res.json();
             if (!res.ok) return toast.error(data.error);
 
-            toast.success('Login successful');
+            toast.success('Logged in.');
+            router.push('/dashboard');
 
         } catch (error: any) {
             console.error(error.message);
@@ -49,28 +51,58 @@ export default function Login() {
     };
 
     return (
-        <div>
-            <h3>Login form</h3>
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+            <Card className="w-full max-w-sm">
+                <CardHeader>
+                    <CardTitle className="text-xl">Welcome back</CardTitle>
+                    <CardDescription>Log in to your account</CardDescription>
+                </CardHeader>
 
-            <Input
-                type='email'
-                value={email}
-                onChange={(e) => { setEmail(e.target.value) }}
-                placeholder="johndoe@email.com"
-                required
-                disabled={loading}
-            />
+                <CardContent className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="johndoe@email.com"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
 
-            <Input
-                type='password'
-                value={password}
-                onChange={(e) => { setPassword(e.target.value) }}
-                placeholder="********"
-                required
-                disabled={loading}
-            />
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
 
-            <Button onClick={loginUser}>{loading ? <><Spinner /> <h6>loading...</h6></> : <><h6>Login</h6></>}</Button>
+                    <Button onClick={loginUser} disabled={loading} className="w-full mt-2">
+                        {loading ? (
+                            <span className="flex items-center gap-2">
+                                <Spinner /> Logging in...
+                            </span>
+                        ) : (
+                            'Log in'
+                        )}
+                    </Button>
+
+                    <p className="text-sm text-muted-foreground text-center">
+                        Don't have an account?{' '}
+                        <a href="/register" className="text-foreground underline underline-offset-4">
+                            Register
+                        </a>
+                    </p>
+                </CardContent>
+            </Card>
         </div>
-    )
+    );
 }
