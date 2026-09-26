@@ -14,6 +14,7 @@ export default function Login() {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [passState, setPassState] = useState<'password' | 'text'>('password');
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -33,7 +34,7 @@ export default function Login() {
                 body: JSON.stringify({ email, password }),
                 credentials: 'include'
             });
-            
+
             const data = await res.json();
             if (!res.ok) return toast.error(data.error);
 
@@ -74,15 +75,34 @@ export default function Login() {
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            required
-                            disabled={loading}
-                        />
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                type={passState}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                                disabled={loading}
+                                className="pr-10"
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                                onClick={() => setPassState(prev => prev === 'password' ? 'text' : 'password')}
+                            >
+                                {password && (
+                                    <img
+                                        src={passState === 'password' ? '/icons8-eye-24.png' : '/icons8-hide-24.png'}
+                                        alt={passState === 'password' ? 'show password' : 'hide password'}
+                                        width={18}
+                                        height={18}
+                                    />
+                                )}
+                            </Button>
+                        </div>
                     </div>
 
                     <Button onClick={loginUser} disabled={loading} className="w-full mt-2">
@@ -103,6 +123,6 @@ export default function Login() {
                     </p>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }

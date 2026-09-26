@@ -123,7 +123,7 @@ app.get('/me', async (req, res) => {
 app.get('/users', onlyAdmin, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, username, email, role, FROM users;'
+            'SELECT id, username, email, role FROM users;'
         );
         if (result.rows.length === 0) return res.status(400).json({ error: 'No records found.' });
 

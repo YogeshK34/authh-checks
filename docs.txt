@@ -10,3 +10,6 @@ user
 fringgus@gmail.com
 123456
 user -> but have to change this to admin
+
+1. Give a logout button on all the pages except register and login 
+2. Add a Users button redirect on Dashboard Page for Admins

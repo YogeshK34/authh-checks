@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface User {
     id: number,
@@ -17,6 +19,7 @@ interface User {
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const router = useRouter();
 
     useEffect(() => {
         async function fetchUsers() {
@@ -41,6 +44,26 @@ export default function Users() {
 
         fetchUsers();
     }, [])
+
+    async function logout() {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+            if (!res.ok) return toast.error(data.error);
+
+            toast.success('Logged out.');
+            setTimeout(() => router.push('/login'), 1000);
+
+        } catch (error: any) {
+            console.error(error.message);
+            toast.error(error.message);
+            return;
+        }
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -100,6 +123,8 @@ export default function Users() {
                     </CardContent>
                 </Card>
             </main>
+
+            <Button onClick={logout}>Logout</Button>
         </div>
     )
 }
