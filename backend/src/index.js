@@ -20,6 +20,15 @@ app.use(session({
 
 const PORT = 3001;
 
+function onlyAdmin(req, res, next) {
+    if (!req.session?.user_id || req.session.user_role !== 'admin') {
+        res.status(403).json({ error: 'Only admins can access.' });
+        return;
+    };
+
+    next();
+}
+
 app.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body
@@ -49,7 +58,8 @@ app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            res.status(400).json({ error: 'Incomplete Payload.' })
+            res.status(400).json({ error: 'Incomplete Payload.' });
+            return;
         };
 
         // check if user sent the correct email
@@ -63,11 +73,12 @@ app.post('/login', async (req, res) => {
         const user = result.rows[0];
 
         // for password comparison, first fetch the password from DB 
-        const isMatch = bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: 'Incorrect password.' });
 
         req.session.user_id = user.id;
         req.session.user_email = user.email;
+        req.session.user_role = user.role;
 
         res.status(200).json({ message: `User ${user.username} logged in.` })
 
@@ -78,20 +89,49 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Logout failed.' })
+        }
+
+        res.clearCookie('connect.sid')
+        res.status(200).json({ message: 'Logged out.' })
+    })
+})
+
 app.get('/me', async (req, res) => {
     try {
         if (req.session?.user_id) {
-            res.status(200).json({ authenticated: true, userId: req.session.user_id });
-        };
+            res.status(200).json({ authenticated: true, userId: req.session.user_id, role: req.session.user_role });
+            return;
+        }
 
-        res.status(401).json({ authenticated: false });
+        return res.status(401).json({ authenticated: false });
+
+    } catch (error) {
+        console.error(error.message);
+        if (!res.headersSent) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+});
+
+app.get('/users', onlyAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM users;'
+        );
+        if (result.rows.length === 0) return res.status(400).json({ error: 'No records found.' });
+
+        res.status(200).json({ result: result.rows });
 
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });
         return;
-    }
-})
+    };
+});
 
 app.listen(PORT, function () {
     console.log(`Express started on PORT: ${PORT}`)

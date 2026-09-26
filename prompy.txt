@@ -1,0 +1,11 @@
+Hey, running into this error on the Next.js side:
+
+TypeError: terminated
+  cause: SocketError: other side closed
+  code: UND_ERR_SOCKET
+
+Next.js proxy.ts is making a fetch to the Express /me endpoint (localhost:3001), but the socket is closing abruptly mid-request. The proxy throws 'terminated' because the backend drops the connection before sending a full response.
+
+The dashboard route is also returning 404 which suggests the proxy redirect isn't completing either.
+
+Can you check what's happening on the Express side when /me gets hit? Likely something is crashing there and closing the socket before a response goes out.

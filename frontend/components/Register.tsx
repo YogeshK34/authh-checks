@@ -20,7 +20,7 @@ export default function Register() {
         try {
             setLoading(true);
 
-            const res = await fetch('http://localhost:3001/register', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify({ username, email, password }),
