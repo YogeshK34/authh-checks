@@ -1,2 +1,12 @@
 1. Admin privileges 
 2. How to add them
+
+
+Routes to Edit and Delete users for Admins only 
+mike@gmail.com 
+123456
+user 
+
+fringgus@gmail.com
+123456
+user -> but have to change this to admin

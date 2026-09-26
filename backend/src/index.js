@@ -20,6 +20,9 @@ app.use(session({
 
 const PORT = 3001;
 
+// I have to think in terms of when to block users: 
+// 1. when they've not provided any user_id 
+// 2. the role isn't Admin --> only avoid these times, rest let anyone access them
 function onlyAdmin(req, res, next) {
     if (!req.session?.user_id || req.session.user_role !== 'admin') {
         res.status(403).json({ error: 'Only admins can access.' });
@@ -120,7 +123,7 @@ app.get('/me', async (req, res) => {
 app.get('/users', onlyAdmin, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT * FROM users;'
+            'SELECT id, username, email, role, FROM users;'
         );
         if (result.rows.length === 0) return res.status(400).json({ error: 'No records found.' });
 
